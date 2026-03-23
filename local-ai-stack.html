@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local AI Stack — Mac Mini + Ollama + OpenClaw</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
+
+  /* ── Sections ── */
+  .slide{display:flex;align-items:center;justify-content:center;padding:80px 40px;position:relative}
+  .slide:first-child{min-height:100vh}
+  .slide-inner{max-width:820px;width:100%;opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease}
+  .slide-inner.visible{opacity:1;transform:translateY(0)}
+  .slide:first-child .slide-inner{opacity:1;transform:none}
+
+  /* ── Alternating backgrounds ── */
+  .slide:nth-child(odd){background:#0f172a}
+  .slide:nth-child(even){background:#1e293b}
+  .slide.accent{background:#1e3a5f}
+  .slide.warn{background:#44200d}
+  .slide.green-bg{background:#0d3320}
+
+  /* ── Slide counter ── */
+  .slide-num{position:absolute;top:24px;right:32px;font-size:0.7rem;color:#475569;font-weight:600;letter-spacing:0.05em}
+
+  /* ── Typography ── */
+  h1{font-size:2.8rem;font-weight:800;color:#f8fafc;line-height:1.15;margin-bottom:12px}
+  h2{font-size:1.8rem;font-weight:700;color:#f8fafc;margin-bottom:16px;line-height:1.25}
+  h3{font-size:1.1rem;font-weight:700;color:#f8fafc;margin-bottom:8px}
+  p{font-size:0.95rem;color:#cbd5e1;margin-bottom:14px;max-width:640px}
+  .lead{font-size:1.15rem;color:#94a3b8}
+  .big-number{font-size:3.5rem;font-weight:800;color:#38bdf8;line-height:1}
+  .label-sm{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:600;margin-bottom:6px}
+
+  /* ── Glossary tooltips ── */
+  .t{position:relative;border-bottom:1.5px dotted #38bdf8;color:#7dd3fc;cursor:help;font-weight:500}
+  .t:hover{color:#bae6fd}
+  .t .tip{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#f8fafc;color:#0f172a;font-size:0.78rem;font-weight:400;line-height:1.5;padding:12px 16px;border-radius:10px;width:290px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.4);pointer-events:none}
+  .t .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:#f8fafc}
+  .t:hover .tip{display:block}
+
+  /* ── Cards ── */
+  .card-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0}
+  .card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:24px 20px;text-align:center}
+  .card .icon{font-size:2.2rem;margin-bottom:10px}
+  .card h3{font-size:0.95rem;margin-bottom:6px}
+  .card p{font-size:0.8rem;color:#94a3b8;margin:0;max-width:100%;text-align:left}
+
+  /* ── Network diagram ── */
+  .net-v{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0}
+  .net-node{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px 24px;text-align:center;width:100%;max-width:360px}
+  .net-node.purple{border-color:#8b5cf6;background:rgba(139,92,246,0.1)}
+  .net-node.blue{border-color:#3b82f6;background:rgba(59,130,246,0.1)}
+  .net-node.green{border-color:#10b981;background:rgba(16,185,129,0.08)}
+  .net-node .nn-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;font-weight:600}
+  .net-node .nn-name{font-size:0.95rem;font-weight:700;color:#f8fafc}
+  .net-node .nn-sub{font-size:0.72rem;color:#94a3b8}
+  .net-arrow-v{color:#475569;font-size:0.85rem;padding:6px 0;text-align:center}
+
+  /* ── Server internals row ── */
+  .srv-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:nowrap}
+  .srv-pill{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px 14px;text-align:center;flex:1;min-width:0}
+  .srv-pill .sp-l{font-size:0.58rem;text-transform:uppercase;color:#34d399;font-weight:600}
+  .srv-pill .sp-n{font-size:0.82rem;font-weight:700;color:#f8fafc;white-space:nowrap}
+  .srv-pill .sp-d{font-size:0.62rem;color:#94a3b8;white-space:nowrap}
+  .srv-a{color:#475569;flex-shrink:0}
+
+  /* ── Callout boxes ── */
+  .callout{border-radius:12px;padding:16px 20px;margin:16px 0;font-size:0.88rem}
+  .callout.info{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25)}
+  .callout.info strong{color:#93c5fd}
+  .callout.warn{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+  .callout.warn strong{color:#fcd34d}
+  .callout.red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)}
+  .callout.red strong{color:#fca5a5}
+
+  /* ── FAQ items ── */
+  .faq{margin:12px 0}
+  .faq p{margin-bottom:10px}
+  .faq strong{color:#f8fafc}
+
+  /* ── Comparison table ── */
+  table{width:100%;border-collapse:collapse;font-size:0.82rem;margin:16px 0}
+  th{background:rgba(255,255,255,0.08);color:#94a3b8;padding:10px 14px;text-align:left;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em}
+  td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);color:#cbd5e1}
+  tr:hover td{background:rgba(255,255,255,0.03)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:0.7rem;font-weight:600}
+  .tag.g{background:rgba(34,197,94,0.2);color:#4ade80}
+  .tag.a{background:rgba(245,158,11,0.2);color:#fbbf24}
+
+  /* ── Use case cards ── */
+  .uc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+  .uc{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px}
+  .uc h4{font-size:0.85rem;font-weight:700;color:#f8fafc;margin-bottom:4px}
+  .uc p{font-size:0.78rem;color:#94a3b8;margin:0;max-width:100%}
+  .uc-label{display:inline-block;font-size:0.6rem;font-weight:600;padding:2px 7px;border-radius:4px;margin-bottom:8px}
+  .uc-label.loc{background:rgba(34,197,94,0.2);color:#4ade80}
+  .uc-label.cld{background:rgba(59,130,246,0.2);color:#93c5fd}
+  .uc-label.eith{background:rgba(245,158,11,0.2);color:#fbbf24}
+
+  /* ── Glossary table ── */
+  .gloss td:first-child{font-weight:600;color:#7dd3fc;white-space:nowrap;width:140px}
+  .gloss td{font-size:0.82rem}
+
+  /* ── TL;DR ── */
+  .tldr{background:rgba(59,130,246,0.12);border:2px solid rgba(59,130,246,0.3);border-radius:14px;padding:24px 28px;margin:12px 0}
+  .tldr h3{color:#93c5fd;margin-bottom:10px}
+  .tldr p{color:#cbd5e1;margin:0 0 8px;max-width:100%}
+  .tldr p:last-child{margin:0}
+
+  /* ── Progress bar ── */
+  .progress{position:fixed;top:0;left:0;height:3px;background:#38bdf8;z-index:200;transition:width 0.15s ease}
+
+  /* ── Scroll hint ── */
+  .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:0.72rem;color:#475569;letter-spacing:0.05em;animation:pulse 2s ease infinite}
+  @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+  /* ── Nav dots ── */
+  .dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:100}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);cursor:pointer;transition:all 0.2s}
+  .dot:hover,.dot.active{background:#38bdf8;transform:scale(1.3)}
+
+  /* ── Hint text ── */
+  .hint{font-size:0.78rem;color:#64748b;font-style:italic}
+
+  /* ── Footer ── */
+  .footer{text-align:center;font-size:0.7rem;color:#334155;padding:20px 0}
+
+  @media(max-width:700px){
+    .card-row,.uc-grid{grid-template-columns:1fr}
+    .srv-row{flex-wrap:wrap}
+    h1{font-size:2rem}h2{font-size:1.4rem}
+    .slide{padding:40px 20px}
+    .dots{display:none}
+  }
+  @media print{.slide-inner{opacity:1!important;transform:none!important}.slide{page-break-after:always}.dots,.progress,.scroll-hint{display:none}}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<nav class="dots" id="dots"></nav>
+
+<!-- ═══════════════════════ SLIDE 1 — TITLE ═══════════════════════ -->
+<section class="slide" id="s0">
+  <div class="slide-inner">
+    <p class="label-sm">Internal Reference</p>
+    <h1>Local AI Stack</h1>
+    <p class="lead">Mac Mini + Ollama + OpenClaw — how it works, what it replaces, and what it doesn't.</p>
+
+    <div class="tldr" style="margin-top:24px">
+      <h3>TL;DR</h3>
+      <p>A <strong>Mac Mini</strong> runs free, open-source AI models via <strong>Ollama</strong>. <strong>OpenClaw</strong> connects it to Teams as <strong>"RadMax."</strong> It does NOT use Claude/ChatGPT. It does NOT learn from conversations. Your data never leaves the building.</p>
+      <p><strong>Why?</strong> Unlimited free AI for everyday tasks so the team saves paid tokens for complex work where quality matters.</p>
+    </div>
+
+    <p class="hint" style="margin-top:16px">Terms with a <span class="t" style="cursor:default">dotted underline<span class="tip">Like this! Hover any highlighted term for a quick definition.</span></span> have hover definitions.</p>
+  </div>
+  <div class="scroll-hint">scroll to begin ↓</div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 2 — THE THREE PIECES ═══════════════════════ -->
+<section class="slide" id="s1">
+  <div class="slide-inner">
+    <div class="slide-num">01 / 09</div>
+    <p class="label-sm">Architecture</p>
+    <h2>The Three Pieces</h2>
+    <p>The setup has three layers. Each does exactly one job.</p>
+    <div class="card-row">
+      <div class="card">
+        <div class="icon">🖥️</div>
+        <h3>Mac Mini (M4)</h3>
+        <p><strong>The hardware.</strong> A compact Apple computer on the office network. Its chip has <span class="t">unified memory<span class="tip">Apple Silicon's architecture where CPU and GPU share the same RAM pool — critical for running large AI models.</span></span> (GPU + RAM share one pool), ideal for AI. Acts as a dedicated always-on server.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🦙</div>
+        <h3>Ollama</h3>
+        <p><strong>The AI engine.</strong> Free software on the Mac Mini. Downloads, manages, and runs <span class="t">open-source models<span class="tip">AI models whose code/weights are publicly available for free — e.g. Llama (Meta), Mistral, DeepSeek.</span></span> (Llama, Mistral, DeepSeek). Exposes an <span class="t">API<span class="tip">Application Programming Interface — a "door" that lets one piece of software talk to another.</span></span> that other software talks to.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤖</div>
+        <h3>OpenClaw</h3>
+        <p><strong>The chat router.</strong> Open-source software connecting Ollama to Teams, Slack, WhatsApp. You message in Teams → OpenClaw routes to Ollama → sends the reply back. You never touch Ollama directly.</p>
+      </div>
+    </div>
+    <div class="callout info">
+      <strong>This does NOT use Claude, ChatGPT, or any paid AI.</strong> The models are completely separate, free, open-source. No data is sent to Anthropic, OpenAI, or any external company.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 3 — NETWORK SETUP ═══════════════════════ -->
+<section class="slide" id="s2">
+  <div class="slide-inner">
+    <div class="slide-num">02 / 09</div>
+    <p class="label-sm">Network</p>
+    <h2>How It's Hosted</h2>
+    <p>The Mac Mini acts as a <strong style="color:#f8fafc">server on your office network</strong> — not cloud, not remote desktop. Just a computer on the same network as everyone else's machines.</p>
+
+    <div class="net-v">
+      <div class="net-node purple">
+        <div class="nn-label">Your Device</div>
+        <div class="nn-name">Teams — "RadMax" bot</div>
+        <div class="nn-sub">Message RadMax from any device</div>
+      </div>
+      <div class="net-arrow-v">↓ message via Teams ↓</div>
+      <div class="net-node blue">
+        <div class="nn-label">Azure Cloud (Microsoft)</div>
+        <div class="nn-name">Bot Framework</div>
+        <div class="nn-sub">Routes messages via <span class="t">webhook<span class="tip">A URL that one system calls automatically when something happens. Teams calls OpenClaw's webhook on every message.</span></span></div>
+      </div>
+      <div class="net-arrow-v">↓ webhook POST to your network ↓</div>
+      <div class="net-node green" style="max-width:100%">
+        <div class="nn-label">Mac Mini — Your Office Network</div>
+        <div class="srv-row">
+          <div class="srv-pill">
+            <div class="sp-l">Gateway</div>
+            <div class="sp-n">OpenClaw</div>
+            <div class="sp-d"><span class="t">Port<span class="tip">A numbered channel a service listens on — like apartment numbers in a building.</span></span> 3978</div>
+          </div>
+          <div class="srv-a">→</div>
+          <div class="srv-pill">
+            <div class="sp-l">AI Engine</div>
+            <div class="sp-n">Ollama</div>
+            <div class="sp-d">Port 11434</div>
+          </div>
+          <div class="srv-a">→</div>
+          <div class="srv-pill">
+            <div class="sp-l">Hardware</div>
+            <div class="sp-n">M4 + GPU</div>
+            <div class="sp-d">Runs locally</div>
+          </div>
+        </div>
+      </div>
+      <div class="net-arrow-v">↑ response flows back the same path ↑</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 4 — FAQ ═══════════════════════ -->
+<section class="slide" id="s3">
+  <div class="slide-inner">
+    <div class="slide-num">03 / 09</div>
+    <p class="label-sm">FAQ</p>
+    <h2>Common Questions</h2>
+    <div class="faq">
+      <p><strong>"Why is it called RadMax?"</strong> — That's the bot's display name in Teams. Under the hood it's OpenClaw + Ollama. RadMax is the friendly face; the plumbing behind it is the stack on the previous slide.</p>
+      <p><strong>"Is it a server?"</strong> — Yes, functionally. It runs continuously, listens for requests, and serves responses. But it's just a small box on the network running two pieces of software, likely managed via <span class="t">Docker<span class="tip">Software that packages apps into "containers" — isolated boxes that include everything the app needs. Easy to start, stop, update.</span></span>.</p>
+      <p><strong>"Is it remote desktop?"</strong> — No. Nobody logs into the Mac Mini. You interact through Teams only. The admin may occasionally <span class="t">SSH<span class="tip">Secure Shell — remote terminal access to a computer over the network, used for admin/maintenance.</span></span> in to update models, but end users never touch it.</p>
+      <p><strong>"How would it know our current WIP / project status?"</strong> — It doesn't. It has no connection to monday.com, email, SharePoint, or any internal system. You paste in whatever context it needs — a supplier email, a spec, your current status list. Think of it as a fast colleague who knows general knowledge but needs a briefing on current state every time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 5 — LEARNING ═══════════════════════ -->
+<section class="slide accent" id="s4">
+  <div class="slide-inner">
+    <div class="slide-num">04 / 09</div>
+    <p class="label-sm">Key Concept</p>
+    <h2>Does It Learn? No.</h2>
+    <p>An <span class="t">LLM<span class="tip">Large Language Model — the AI model itself. "Llama 3 70B" is an LLM. Ollama runs LLMs locally.</span></span>'s knowledge is baked in during <strong style="color:#f8fafc">training</strong> — a massive process that happens once. The model is then frozen. Your conversations are not fed back in. When a chat ends, it's gone — no memory, no learning.</p>
+    <p>This is identical to Claude and ChatGPT at their core — they don't learn from individual conversations either.</p>
+    <div class="callout warn" style="margin-top:16px">
+      <strong>So what's the point of keeping it local?</strong> Not "training on company data" — it's about: (1) cost — zero per message, (2) privacy — prompts never leave the building, (3) availability — works even if internet drops.
+    </div>
+    <div class="callout info" style="margin-top:12px">
+      <strong>Can it be given company knowledge?</strong> Yes — via <span class="t">RAG<span class="tip">Retrieval-Augmented Generation — attaching relevant documents to the prompt so the AI can reference them without retraining.</span></span>, not learning. Documents are attached to the prompt at query time. OpenClaw's "skills" feature can automate this. Requires technical setup to configure document indexing.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 6 — COMPARISON ═══════════════════════ -->
+<section class="slide" id="s5">
+  <div class="slide-inner">
+    <div class="slide-num">05 / 09</div>
+    <p class="label-sm">Comparison</p>
+    <h2>Cloud AI vs Local AI</h2>
+    <table>
+      <thead><tr><th></th><th>Cloud (Claude, ChatGPT)</th><th>Local (This Setup)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Cost</strong></td><td>Per <span class="t">token<span class="tip">~1 token ≈ ¾ of a word. Both input and output are metered.</span></span>. Adds up fast.</td><td><span class="tag g">$0/message</span> electricity only</td></tr>
+        <tr><td><strong>Intelligence</strong></td><td><span class="tag g">Top tier</span> — strongest reasoning</td><td><span class="tag a">Good, not great</span> — weaker on complex tasks</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>Prompts go to external servers</td><td><span class="tag g">Total isolation</span></td></tr>
+        <tr><td><strong>Internet</strong></td><td>Required</td><td><span class="tag g">Works offline</span></td></tr>
+        <tr><td><strong>Features</strong></td><td>Web search, code exec, tools, <span class="t">MCP<span class="tip">Model Context Protocol — lets AI connect to external tools and data sources (databases, APIs, apps) securely.</span></span></td><td>Text chat only. Some image reading.</td></tr>
+        <tr><td><strong>Context</strong></td><td>200K+ tokens — entire documents</td><td><span class="tag a">8K–32K</span> tokens</td></tr>
+        <tr><td><strong>Best for</strong></td><td>Complex reasoning, code, long docs</td><td>Quick Q&A, drafts, brainstorms</td></tr>
+      </tbody>
+    </table>
+    <div class="callout red">
+      <strong>Bottom line:</strong> Local = workhorse for volume. Claude = specialist for quality. Use local for the 80% of low-stakes queries. Save Claude for the 20% where the answer matters.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 7 — TOKENS ═══════════════════════ -->
+<section class="slide" id="s6">
+  <div class="slide-inner">
+    <div class="slide-num">06 / 09</div>
+    <p class="label-sm">Cost</p>
+    <h2>What "No Token Burn" Means</h2>
+    <p><span class="t">Tokens<span class="tip">The unit AI processes text in. ~1 token ≈ ¾ of a word. Both input and output are metered by cloud providers.</span></span> = how cloud AI bills you. ~1 token ≈ ¾ of a word. Every prompt + every response = tokens = dollars.</p>
+    <table>
+      <thead><tr><th>Provider</th><th>Cost per 1M tokens</th><th>Scale</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Opus</td><td>$15 in / $75 out</td><td>~750K words ≈ 10 novels</td></tr>
+        <tr><td>Claude Sonnet</td><td>$3 in / $15 out</td><td>Same volume, cheaper</td></tr>
+        <tr><td>Local (Ollama)</td><td><span class="tag g">$0</span></td><td>Unlimited</td></tr>
+      </tbody>
+    </table>
+    <p>Mac Mini draws ~10–40W — same as a desk lamp. "No token burn" = <strong style="color:#f8fafc">unlimited use, zero ongoing cost.</strong></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 8 — USE CASES (local) ═══════════════════════ -->
+<section class="slide" id="s7">
+  <div class="slide-inner">
+    <div class="slide-num">07 / 09</div>
+    <p class="label-sm">Use Cases</p>
+    <h2>When to Use RadMax (Local)</h2>
+    <div class="callout warn" style="margin-bottom:16px">
+      <strong>Remember:</strong> RadMax has no internet and no connection to internal systems. You paste in whatever context it needs each time.
+    </div>
+    <div class="uc-grid">
+      <div class="uc">
+        <div class="uc-label loc">LOCAL — free, fast</div>
+        <h4>Quick Supplier Comms</h4>
+        <p><strong>How:</strong> Paste the supplier's email into RadMax and say "Draft a reply confirming revised lead time of 6 weeks, keep it professional." Copy the draft into Outlook and tweak. No setup needed — works out of the box.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label loc">LOCAL — free, fast</div>
+        <h4>Meeting Agenda Structuring</h4>
+        <p><strong>How:</strong> Tell RadMax the topics — "Structure an agenda: WIP delays on X, QC flag on Y, display timeline." <em>You supply the specifics</em> — it doesn't know your current WIP. It's a formatting assistant, not an information source.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label loc">LOCAL — free, fast</div>
+        <h4>General Knowledge Lookups</h4>
+        <p><strong>How:</strong> Ask directly — "What's the difference between PVD and electroplating?" Uses the model's training data (general/public info). No company data needed. Works instantly.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label loc">LOCAL — free, fast</div>
+        <h4>Rewriting & Translation</h4>
+        <p><strong>How:</strong> Paste text and instruct — "Make this more professional" / "Shorten to 3 bullets" / "Translate from Mandarin." Pure text transformation. No system access needed.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label loc">LOCAL — free, fast</div>
+        <h4>Brainstorming</h4>
+        <p><strong>How:</strong> Prompt freely — "10 ways to reduce packaging waste on towel rail shipments." The AI draws on general knowledge. You curate the results. It's a thinking partner, not a data source.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label loc">LOCAL + RAG (advanced)</div>
+        <h4>Company Knowledge Bot (future)</h4>
+        <p><strong>How:</strong> Requires extra setup. OpenClaw "skills" or a RAG pipeline indexes specific docs (SOPs, specs, price lists) and auto-attaches them to prompts. Needs someone technical to configure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 9 — USE CASES (cloud) ═══════════════════════ -->
+<section class="slide" id="s8">
+  <div class="slide-inner">
+    <div class="slide-num">08 / 09</div>
+    <p class="label-sm">Use Cases</p>
+    <h2>When to Use Claude (Cloud)</h2>
+    <div class="uc-grid">
+      <div class="uc">
+        <div class="uc-label cld">CLOUD — use Claude</div>
+        <h4>Complex Document Drafting</h4>
+        <p><strong>How:</strong> Use Claude directly (web, desktop, or Cowork). Upload reference docs, paste specs, ask it to draft SOPs, QC procedures, compliance docs. Claude's reasoning is significantly stronger — local models hallucinate more on detailed technical content.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label cld">CLOUD — use Claude</div>
+        <h4>Code, Automation & Integrations</h4>
+        <p><strong>How:</strong> Use Cowork or Claude Code. Claude connects to external services via MCP (monday.com, Slack, etc.) and is significantly better at multi-step reasoning required for building automations and scripts.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label cld">CLOUD — use Claude</div>
+        <h4>Long Document Analysis</h4>
+        <p><strong>How:</strong> Upload supplier drawings, compliance reports, or standards to Claude. Its <span class="t">context window<span class="tip">The maximum text the model can "see" at once — prompt + history + response. Bigger = longer documents.</span></span> (200K+ tokens) handles entire documents that would overflow local models (8K–32K). Ask it to cross-reference, summarise, flag issues.</p>
+      </div>
+      <div class="uc">
+        <div class="uc-label eith">EITHER — judgement call</div>
+        <h4>Formatting & Restructuring</h4>
+        <p><strong>How:</strong> Paste content + describe the format — "Make this a table with item, status, owner columns." Simple formatting = RadMax (free). Complex restructuring needing comprehension = Claude (smarter).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 10 — GLOSSARY + TL;DR ═══════════════════════ -->
+<section class="slide" id="s9">
+  <div class="slide-inner">
+    <div class="slide-num">09 / 09</div>
+    <p class="label-sm">Reference</p>
+    <h2>Key Terms</h2>
+    <p class="hint">Same definitions as the hover tooltips throughout.</p>
+    <table class="gloss">
+      <tbody>
+        <tr><td>API</td><td>A "door" letting software talk to other software. Ollama's API is on port 11434.</td></tr>
+        <tr><td>Port</td><td>A numbered channel a service listens on — like apartment numbers in a building.</td></tr>
+        <tr><td>Webhook</td><td>A URL one system auto-calls when something happens. Teams calls OpenClaw's webhook per message.</td></tr>
+        <tr><td>Docker</td><td>Packages apps into isolated "containers." Easy to install, run, and update without messing up the host.</td></tr>
+        <tr><td>SSH</td><td>Secure Shell — remote terminal access. How the admin manages the Mac Mini without being at it.</td></tr>
+        <tr><td>MCP</td><td>Model Context Protocol — lets AI connect to external tools and data sources securely.</td></tr>
+        <tr><td>LLM</td><td>Large Language Model — the AI model itself. Ollama runs LLMs.</td></tr>
+        <tr><td>Quantisation</td><td>Compressing a model for less RAM + faster speed with minimal quality loss.</td></tr>
+        <tr><td>RAG</td><td>Retrieval-Augmented Generation — attaching docs to prompts so the AI can reference your data.</td></tr>
+        <tr><td>Token</td><td>~1 token ≈ ¾ word. Both input and output are measured in tokens.</td></tr>
+        <tr><td>Context window</td><td>Max text the model sees at once. Bigger = handles longer documents.</td></tr>
+        <tr><td>Unified memory</td><td>Apple Silicon arch where CPU + GPU share RAM — critical for running large models.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="footer" style="margin-top:32px">24 March 2026</div>
+  </div>
+</section>
+
+<script>
+const prog = document.getElementById('prog');
+const slides = document.querySelectorAll('.slide');
+const inners = document.querySelectorAll('.slide-inner');
+const dotsNav = document.getElementById('dots');
+
+// Create nav dots
+slides.forEach((s, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => s.scrollIntoView({ behavior: 'smooth' });
+  dotsNav.appendChild(d);
+});
+const dots = dotsNav.querySelectorAll('.dot');
+
+// Fade-in on scroll
+const fadeObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.12 });
+inners.forEach(el => fadeObserver.observe(el));
+
+// Progress bar + active dot tracking
+const trackObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const i = [...slides].indexOf(e.target);
+      dots.forEach((d, j) => d.classList.toggle('active', j === i));
+      prog.style.width = ((i + 1) / slides.length * 100) + '%';
+    }
+  });
+}, { threshold: 0.3 });
+slides.forEach(s => trackObserver.observe(s));
+</script>
+
+</body>
+</html>
