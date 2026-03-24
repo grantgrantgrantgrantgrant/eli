@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELI Home Setup — GitHub + iOS Shortcut</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
+
+  .slide{display:flex;align-items:center;justify-content:center;padding:80px 40px;position:relative}
+  .slide:first-child{min-height:100vh}
+  .slide-inner{max-width:820px;width:100%;opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease}
+  .slide-inner.visible{opacity:1;transform:translateY(0)}
+  .slide:first-child .slide-inner{opacity:1;transform:none}
+
+  .slide:nth-child(odd){background:#0f172a}
+  .slide:nth-child(even){background:#1e293b}
+  .slide.accent{background:#1e3a5f}
+
+  .slide-num{position:absolute;top:24px;right:32px;font-size:0.7rem;color:#475569;font-weight:600;letter-spacing:0.05em}
+
+  h1{font-size:2.8rem;font-weight:800;color:#f8fafc;line-height:1.15;margin-bottom:12px}
+  h2{font-size:1.8rem;font-weight:700;color:#f8fafc;margin-bottom:16px;line-height:1.25}
+  h3{font-size:1.1rem;font-weight:700;color:#f8fafc;margin-bottom:8px}
+  p{font-size:0.95rem;color:#cbd5e1;margin-bottom:14px;max-width:640px}
+  .lead{font-size:1.15rem;color:#94a3b8}
+  .label-sm{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:600;margin-bottom:6px}
+
+  .tldr{background:rgba(59,130,246,0.12);border:2px solid rgba(59,130,246,0.3);border-radius:14px;padding:24px 28px;margin:12px 0}
+  .tldr h3{color:#93c5fd;margin-bottom:10px}
+  .tldr p{color:#cbd5e1;margin:0 0 8px;max-width:100%}
+  .tldr p:last-child{margin:0}
+
+  .callout{border-radius:12px;padding:16px 20px;margin:16px 0;font-size:0.88rem}
+  .callout.info{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25)}
+  .callout.info strong{color:#93c5fd}
+  .callout.warn{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+  .callout.warn strong{color:#fcd34d}
+  .callout.green{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)}
+  .callout.green strong{color:#4ade80}
+
+  /* Steps */
+  .step{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px 24px;margin:16px 0}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#38bdf8;color:#0f172a;font-weight:800;font-size:0.85rem;margin-bottom:12px}
+  .step h3{margin-bottom:10px}
+  .step p{font-size:0.88rem;margin-bottom:10px}
+  .step code{background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:5px;font-size:0.82rem;color:#7dd3fc;font-family:'SF Mono',Consolas,monospace}
+  .step .substep{margin:8px 0 8px 16px;padding-left:14px;border-left:2px solid rgba(255,255,255,0.1);font-size:0.85rem;color:#94a3b8}
+  .step .substep strong{color:#e2e8f0}
+
+  /* Shortcut action blocks */
+  .action{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:14px 18px;margin:10px 0;font-size:0.85rem}
+  .action .act-num{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:#a78bfa;font-weight:700;margin-bottom:4px}
+  .action .act-name{font-weight:700;color:#c4b5fd;margin-bottom:4px}
+  .action .act-detail{color:#94a3b8;font-size:0.82rem}
+
+  /* Diagram */
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0}
+  .flow-box{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px 24px;text-align:center;width:100%;max-width:360px}
+  .flow-box.work{border-color:#3b82f6;background:rgba(59,130,246,0.1)}
+  .flow-box.private{border-color:#a855f7;background:rgba(168,85,247,0.1)}
+  .flow-box.phone{border-color:#f59e0b;background:rgba(245,158,11,0.1)}
+  .flow-box .fb-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;font-weight:600}
+  .flow-box .fb-name{font-size:0.95rem;font-weight:700;color:#f8fafc}
+  .flow-box .fb-sub{font-size:0.72rem;color:#94a3b8}
+  .flow-arrow{color:#475569;font-size:0.85rem;padding:6px 0;text-align:center}
+  .flow-split{display:flex;gap:16px;width:100%;max-width:400px}
+  .flow-split .flow-box{flex:1}
+
+  .progress{position:fixed;top:0;left:0;height:3px;background:#38bdf8;z-index:200;transition:width 0.15s ease}
+  .dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:100}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);cursor:pointer;transition:all 0.2s}
+  .dot:hover,.dot.active{background:#38bdf8;transform:scale(1.3)}
+  .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:0.72rem;color:#475569;letter-spacing:0.05em;animation:pulse 2s ease infinite}
+  @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .hint{font-size:0.78rem;color:#64748b;font-style:italic}
+  .footer{text-align:center;font-size:0.7rem;color:#334155;padding:20px 0}
+
+  @media(max-width:700px){
+    h1{font-size:2rem}h2{font-size:1.4rem}
+    .slide{padding:40px 20px}
+    .dots{display:none}
+    .flow-split{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<nav class="dots" id="dots"></nav>
+
+<!-- ═══ SLIDE 0 — TITLE + TL;DR ═══ -->
+<section class="slide" id="s0">
+<div class="slide-inner">
+  <p class="label-sm">Setup Guide</p>
+  <h1>ELI Home Setup</h1>
+  <p class="lead">Personal GitHub account + iOS Shortcut — so you can fire off guide requests straight from Instagram or a random thought on the couch.</p>
+
+  <div class="tldr">
+    <h3>TL;DR</h3>
+    <p>Create a free personal GitHub account → make a private repo → generate a PAT → build an iOS Shortcut that creates GitHub Issues from the share sheet or home screen. Requests route to either your <strong>work (public)</strong> or <strong>private</strong> pipeline depending on a one-tap choice.</p>
+  </div>
+
+  <p class="hint">Terms with a <span style="border-bottom:1.5px dotted #38bdf8;color:#7dd3fc;cursor:help">dotted underline</span> have hover definitions.</p>
+  <div class="scroll-hint">scroll to begin ↓</div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 1 — HOW IT WORKS ═══ -->
+<section class="slide" id="s1">
+<div class="slide-inner">
+  <div class="slide-num">01 / 07</div>
+  <p class="label-sm">Overview</p>
+  <h2>How the System Works</h2>
+  <p>One iOS Shortcut, two pipelines. When you share a reel or type a topic, the Shortcut asks "Work or Private?" and routes the request to the right GitHub repo as an Issue.</p>
+
+  <div class="flow">
+    <div class="flow-box phone">
+      <div class="fb-label">Your Phone</div>
+      <div class="fb-name">iOS Shortcut</div>
+      <div class="fb-sub">Share sheet or home screen tap</div>
+    </div>
+    <div class="flow-arrow">↓ "Work or Private?"</div>
+    <div class="flow-split">
+      <div class="flow-box work">
+        <div class="fb-label">Work Pipeline</div>
+        <div class="fb-name">eli</div>
+        <div class="fb-sub">Public repo → GitHub Pages</div>
+        <div class="fb-sub">Processed on Work Claude</div>
+      </div>
+      <div class="flow-box private">
+        <div class="fb-label">Private Pipeline</div>
+        <div class="fb-name">eli-private</div>
+        <div class="fb-sub">Private repo → local only</div>
+        <div class="fb-sub">Processed on Home Claude</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>⚠️ The separation is absolute.</strong> Sensitive topics never touch your work GitHub account, work Claude, or any work system. Two accounts, two repos, two processing paths.
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 2 — CREATE PERSONAL GITHUB ═══ -->
+<section class="slide" id="s2">
+<div class="slide-inner">
+  <div class="slide-num">02 / 07</div>
+  <p class="label-sm">Part 1</p>
+  <h2>Create Personal GitHub Account</h2>
+  <p>This is your private account, completely separate from your work GitHub. It's free and takes 2 minutes.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>Go to github.com/signup</h3>
+    <p>Use your <strong>personal email</strong> (not work). Pick a username that doesn't link back to your work identity if privacy matters to you.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>Create the private repo</h3>
+    <p>Once you're in, click the <strong>+</strong> button (top right) → <strong>New repository</strong></p>
+    <div class="substep"><strong>Repository name:</strong> <code>eli-private</code></div>
+    <div class="substep"><strong>Visibility:</strong> Private ← this is critical</div>
+    <div class="substep"><strong>README:</strong> leave off</div>
+    <div class="substep"><strong>Everything else:</strong> leave as default</div>
+    <p>Click <strong>Create repository</strong>.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>Generate a PAT for the private repo</h3>
+    <p>Go to <code>github.com/settings/personal-access-tokens/new</code> (or Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens → Generate new token)</p>
+    <div class="substep"><strong>Token name:</strong> <code>eli-private-shortcut</code></div>
+    <div class="substep"><strong>Expiration:</strong> 90 days</div>
+    <div class="substep"><strong>Repository access:</strong> Only select repositories → <code>eli-private</code></div>
+    <div class="substep"><strong>Permissions:</strong> Click "+ Add permissions" → search <strong>Issues</strong> → set to <strong>Read and write</strong></div>
+    <p>Click <strong>Generate token</strong>. Copy the token and save it somewhere safe — you'll need it for the Shortcut. It starts with <code>github_pat_...</code></p>
+  </div>
+
+  <div class="callout info">
+    <strong>💡 This PAT can only create issues on eli-private.</strong> It can't access any other repo, read your code, or do anything else. If it leaks, the worst someone could do is create junk issues on a private repo only you can see.
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 3 — WORK PAT FOR ISSUES ═══ -->
+<section class="slide" id="s3">
+<div class="slide-inner">
+  <div class="slide-num">03 / 07</div>
+  <p class="label-sm">Part 2</p>
+  <h2>Generate a Work PAT for Issues</h2>
+  <p>Your existing work PAT (<code>eli-pages</code>) has Contents permission for pushing files. For the iOS Shortcut, you need a PAT that can <strong>create Issues</strong> on the work repo too.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>Log into your work GitHub</h3>
+    <p>Go to <code>github.com/settings/personal-access-tokens/new</code> on your <strong>work</strong> GitHub account (grantgrantgrantgrantgrant).</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>Create the token</h3>
+    <div class="substep"><strong>Token name:</strong> <code>eli-shortcut</code></div>
+    <div class="substep"><strong>Expiration:</strong> 90 days</div>
+    <div class="substep"><strong>Repository access:</strong> Only select repositories → <code>eli</code></div>
+    <div class="substep"><strong>Permissions:</strong> Click "+ Add permissions" → search <strong>Issues</strong> → set to <strong>Read and write</strong></div>
+    <p>Click <strong>Generate token</strong>. Copy and save it.</p>
+  </div>
+
+  <div class="callout warn">
+    <strong>⚠️ You now have two PATs — keep them straight:</strong><br>
+    • <code>eli-shortcut</code> → work GitHub → creates Issues on <strong>eli</strong> (public)<br>
+    • <code>eli-private-shortcut</code> → personal GitHub → creates Issues on <strong>eli-private</strong> (private)
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 4 — BUILD THE SHORTCUT ═══ -->
+<section class="slide" id="s4">
+<div class="slide-inner">
+  <div class="slide-num">04 / 07</div>
+  <p class="label-sm">Part 3</p>
+  <h2>Build the iOS Shortcut</h2>
+  <p>Open the <strong>Shortcuts</strong> app on your iPhone. Tap <strong>+</strong> to create a new Shortcut. Name it <strong>"ELI"</strong>.</p>
+  <p>Add the following actions in order. Use the search bar at the bottom of the Shortcuts editor to find each action by name.</p>
+
+  <div class="action">
+    <div class="act-num">Action 1</div>
+    <div class="act-name">Receive <strong>any</strong> input from Share Sheet</div>
+    <div class="act-detail">Tap "Any" and ensure <strong>URLs</strong> and <strong>Text</strong> are selected. This lets the Shortcut appear when you share a reel or webpage. It's the very first action and may appear automatically — if you see "Receive input from" at the top, you're good.</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 2</div>
+    <div class="act-name">Set variable <code>url</code> to Shortcut Input</div>
+    <div class="act-detail">Search for "Set Variable". Name the variable <code>url</code>. Set its value to <strong>Shortcut Input</strong>. This captures the shared link (if any).</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 3</div>
+    <div class="act-name">Choose from Menu: "Work" / "Private"</div>
+    <div class="act-detail">Search for "Choose from Menu". Set the prompt to <strong>"Route to:"</strong>. Add two options: <strong>Work</strong> and <strong>Private</strong>.</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 4 — inside "Work" branch</div>
+    <div class="act-name">Ask for Input: "What do you want to know?"</div>
+    <div class="act-detail">Search for "Ask for Input". Set the prompt to <strong>"What do you want to know?"</strong>. Set type to <strong>Text</strong>.</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 5 — inside "Work" branch</div>
+    <div class="act-name">Set variable <code>note</code> to Provided Input</div>
+    <div class="act-detail">Search for "Set Variable". Name it <code>note</code>, value is <strong>Provided Input</strong> (the answer from Action 4).</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 6 — inside "Work" branch</div>
+    <div class="act-name">Get Contents of URL (GitHub API — create Issue on eli)</div>
+    <div class="act-detail">
+      Search for "Get Contents of URL".<br><br>
+      <strong>URL:</strong> <code>https://api.github.com/repos/grantgrantgrantgrantgrant/eli/issues</code><br>
+      <strong>Method:</strong> POST<br>
+      <strong>Headers:</strong><br>
+      &nbsp;&nbsp;• <code>Authorization</code> → <code>Bearer YOUR_WORK_PAT_HERE</code><br>
+      &nbsp;&nbsp;• <code>Accept</code> → <code>application/vnd.github+json</code><br>
+      <strong>Request Body:</strong> JSON<br>
+      &nbsp;&nbsp;• <code>title</code> → the <code>note</code> variable<br>
+      &nbsp;&nbsp;• <code>body</code> → the <code>url</code> variable<br>
+      &nbsp;&nbsp;• <code>labels</code> → (leave blank for now, or add <code>["request"]</code>)<br><br>
+      Replace <code>YOUR_WORK_PAT_HERE</code> with the actual eli-shortcut PAT you generated.
+    </div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Action 7 — inside "Work" branch</div>
+    <div class="act-name">Show Notification: "✅ Work request queued"</div>
+    <div class="act-detail">Search for "Show Notification". Set title to <strong>ELI</strong>, body to <strong>Work request queued</strong>.</div>
+  </div>
+
+  <div class="action">
+    <div class="act-num">Actions 8–11 — inside "Private" branch</div>
+    <div class="act-name">Repeat Actions 4–7 but for private repo</div>
+    <div class="act-detail">
+      Same pattern: Ask for Input → Set variable → Get Contents of URL → Show Notification.<br><br>
+      The only differences:<br>
+      &nbsp;&nbsp;• <strong>URL:</strong> <code>https://api.github.com/repos/YOUR_PERSONAL_USERNAME/eli-private/issues</code><br>
+      &nbsp;&nbsp;• <strong>Authorization:</strong> <code>Bearer YOUR_PRIVATE_PAT_HERE</code><br>
+      &nbsp;&nbsp;• <strong>Notification:</strong> "🔒 Private request queued"<br><br>
+      Replace <code>YOUR_PERSONAL_USERNAME</code> and <code>YOUR_PRIVATE_PAT_HERE</code> with your personal GitHub details.
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>✅ That's the whole Shortcut.</strong> 11 actions total: receive input, capture URL, choose route, then each branch asks what you want to know and fires it to the right GitHub repo.
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 5 — ADD TO HOME SCREEN ═══ -->
+<section class="slide" id="s5">
+<div class="slide-inner">
+  <div class="slide-num">05 / 07</div>
+  <p class="label-sm">Part 4</p>
+  <h2>Make It Easy to Trigger</h2>
+  <p>The Shortcut now works from the share sheet (for reels/links). But you also want to launch it from the home screen for random thoughts. Here's how to get both.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>Share sheet (already done)</h3>
+    <p>Because Action 1 accepts input from the Share Sheet, the Shortcut automatically appears when you share a reel. If you don't see it, go to the share sheet → scroll right → <strong>Edit Actions</strong> → toggle <strong>ELI</strong> on.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>Home screen icon</h3>
+    <p>In the Shortcuts app, long-press the ELI Shortcut → <strong>Details</strong> → <strong>Add to Home Screen</strong>. Pick an icon and colour. Now you can tap it from your home screen — when there's no shared URL, the <code>url</code> variable will just be empty, and the Issue body will be blank. The title (your typed topic) is what matters.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>Lock screen widget (optional)</h3>
+    <p>On iOS 16+, you can add a Shortcuts widget to your lock screen. Hold the lock screen → Customize → add the Shortcuts widget → select ELI. One tap from locked phone.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 6 — USING IT ═══ -->
+<section class="slide accent" id="s6">
+<div class="slide-inner">
+  <div class="slide-num">06 / 07</div>
+  <p class="label-sm">Day-to-Day</p>
+  <h2>How You'll Actually Use It</h2>
+
+  <div class="step">
+    <div class="step-num">A</div>
+    <h3>See an AI reel on Instagram</h3>
+    <p>Tap Share (paper plane) → tap <strong>ELI</strong> in the share sheet → pick <strong>Work</strong> → type "explain what MCP is" → done. Notification confirms it's queued.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">B</div>
+    <h3>Random thought on the couch</h3>
+    <p>Tap the <strong>ELI</strong> icon on your home screen → pick <strong>Work</strong> → type "difference between RAG and fine-tuning" → done.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">C</div>
+    <h3>Sensitive/private topic</h3>
+    <p>Same as above, but pick <strong>Private</strong>. The request goes to your personal GitHub, never touches work.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">D</div>
+    <h3>At work next day</h3>
+    <p>Open Cowork → tell Claude "check my ELI queue" → Claude reads the GitHub Issues on the eli repo, builds the guides, pushes them to GitHub Pages, and closes the Issues.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">E</div>
+    <h3>Private topics at home</h3>
+    <p>Open Claude Pro at home → tell Claude "check my private ELI queue" → process from the eli-private repo. Output stays on your home machine.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 7 — CHECKLIST ═══ -->
+<section class="slide" id="s7">
+<div class="slide-inner">
+  <div class="slide-num">07 / 07</div>
+  <p class="label-sm">Summary</p>
+  <h2>Tonight's Checklist</h2>
+  <p>Do these in order. The whole thing should take about 15 minutes.</p>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>1. Create personal GitHub account</h3>
+    <p>github.com/signup → personal email → pick a username</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>2. Create <code>eli-private</code> repo (private)</h3>
+    <p>+ → New repository → name it eli-private → set to Private → Create</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>3. Generate personal PAT (Issues permission)</h3>
+    <p>Settings → Developer Settings → Fine-grained tokens → new → scope to eli-private → Issues: Read and write → Generate → save the token</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>4. Generate work PAT for Issues</h3>
+    <p>Log into grantgrantgrantgrantgrant on GitHub → same process → scope to eli → Issues: Read and write → save the token</p>
+    <div class="callout info" style="margin-top:10px">
+      <strong>💡 You can do this step tomorrow at work instead.</strong> The Shortcut will work for private requests tonight without the work PAT. Just leave the Work branch empty for now and add the work API call tomorrow.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>5. Build the iOS Shortcut</h3>
+    <p>Follow the step-by-step in slide 4. Paste in your PATs where indicated.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>6. Add to home screen</h3>
+    <p>Long-press the Shortcut → Details → Add to Home Screen</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>7. Test it</h3>
+    <p>Open Instagram → share any reel → tap ELI → pick Private → type "test" → check that an Issue appeared on your eli-private repo</p>
+  </div>
+
+  <div class="callout green">
+    <strong>✅ Once this is done, you're set.</strong> Every reel, every random thought — one tap from your phone, queued and waiting for you.
+  </div>
+</div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">24 March 2026</div>
+
+<script>
+  // Progress bar
+  const prog = document.getElementById('prog');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - innerHeight;
+    prog.style.width = (scrollY / h * 100) + '%';
+  });
+
+  // Nav dots
+  const slides = document.querySelectorAll('.slide');
+  const dotsC = document.getElementById('dots');
+  slides.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.onclick = () => s.scrollIntoView({ behavior: 'smooth' });
+    dotsC.appendChild(d);
+  });
+  const dots = dotsC.querySelectorAll('.dot');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        dots.forEach(d => d.classList.remove('active'));
+        const i = [...slides].indexOf(e.target);
+        if (dots[i]) dots[i].classList.add('active');
+      }
+    });
+  }, { threshold: 0.35 });
+  slides.forEach(s => obs.observe(s));
+
+  // Fade-in
+  const inners = document.querySelectorAll('.slide-inner');
+  const fadeObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  inners.forEach(el => fadeObs.observe(el));
+</script>
+</body>
+</html>
