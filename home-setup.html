@@ -112,7 +112,7 @@
 <!-- ═══ SLIDE 1 — HOW IT WORKS ═══ -->
 <section class="slide" id="s1">
 <div class="slide-inner">
-  <div class="slide-num">01 / 07</div>
+  <div class="slide-num">01 / 09</div>
   <p class="label-sm">Overview</p>
   <h2>How the System Works</h2>
   <p>One iOS Shortcut, two pipelines. When you share a reel or type a topic, the Shortcut asks "Work or Private?" and routes the request to the right GitHub repo as an Issue.</p>
@@ -149,7 +149,7 @@
 <!-- ═══ SLIDE 2 — CREATE PERSONAL GITHUB ═══ -->
 <section class="slide" id="s2">
 <div class="slide-inner">
-  <div class="slide-num">02 / 07</div>
+  <div class="slide-num">02 / 09</div>
   <p class="label-sm">Part 1</p>
   <h2>Create Personal GitHub Account</h2>
   <p>This is your private account, completely separate from your work GitHub. It's free and takes 2 minutes.</p>
@@ -191,7 +191,7 @@
 <!-- ═══ SLIDE 3 — WORK PAT (DO AT WORK) ═══ -->
 <section class="slide" id="s3">
 <div class="slide-inner">
-  <div class="slide-num">03 / 07</div>
+  <div class="slide-num">03 / 09</div>
   <p class="label-sm">⏭️ Do This At Work Tomorrow</p>
   <h2>Generate a Work PAT for Issues</h2>
   <p>This step happens <strong>at work, on your work PC</strong>. Do NOT log into your work GitHub from home. Your existing work PAT (<code>eli-pages</code>) has Contents permission for pushing files. For the Shortcut, you need a separate PAT that can <strong>create Issues</strong>.</p>
@@ -234,7 +234,7 @@
 <!-- ═══ SLIDE 4 — BUILD THE SHORTCUT ═══ -->
 <section class="slide" id="s4">
 <div class="slide-inner">
-  <div class="slide-num">04 / 07</div>
+  <div class="slide-num">04 / 09</div>
   <p class="label-sm">Part 3</p>
   <h2>Build the iOS Shortcut</h2>
   <p>Open the <strong>Shortcuts</strong> app on your iPhone. Tap <strong>+</strong> to create a new Shortcut. Name it <strong>"ELI"</strong>.</p>
@@ -316,7 +316,7 @@
 <!-- ═══ SLIDE 5 — ADD TO HOME SCREEN ═══ -->
 <section class="slide" id="s5">
 <div class="slide-inner">
-  <div class="slide-num">05 / 07</div>
+  <div class="slide-num">05 / 09</div>
   <p class="label-sm">Part 4</p>
   <h2>Make It Easy to Trigger</h2>
   <p>The Shortcut now works from the share sheet (for reels/links). But you also want to launch it from the home screen for random thoughts. Here's how to get both.</p>
@@ -344,7 +344,7 @@
 <!-- ═══ SLIDE 6 — USING IT ═══ -->
 <section class="slide accent" id="s6">
 <div class="slide-inner">
-  <div class="slide-num">06 / 07</div>
+  <div class="slide-num">06 / 09</div>
   <p class="label-sm">Day-to-Day</p>
   <h2>How You'll Actually Use It</h2>
 
@@ -383,7 +383,7 @@
 <!-- ═══ SLIDE 7 — CHECKLIST ═══ -->
 <section class="slide" id="s7">
 <div class="slide-inner">
-  <div class="slide-num">07 / 07</div>
+  <div class="slide-num">07 / 09</div>
   <p class="label-sm">Summary</p>
   <h2>Tonight at Home</h2>
   <p>Do these in order. About 15 minutes total. No work accounts needed.</p>
@@ -445,6 +445,123 @@
 
   <div class="callout green">
     <strong>✅ Both pipelines live.</strong> Every reel, every random thought — one tap from your phone, routed to the right place.
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 8 — WATCHER SCRIPT ═══ -->
+<section class="slide" id="s8">
+<div class="slide-inner">
+  <div class="slide-num">08 / 09</div>
+  <p class="label-sm">Part 5 — Both Machines</p>
+  <h2>Install the Notification Watcher</h2>
+  <p>A tiny Python script that runs in the background and fires a <strong>proper Windows notification</strong> (with sound, in the notification centre) whenever new requests land in your queue. Install on both your work and home PCs.</p>
+
+  <div class="callout info">
+    <strong>💡 What this does:</strong> Checks GitHub Issues every time it runs. If there are new requests you haven't been notified about, it pops a Windows toast notification. Click the notification to open the Issues page in your browser.
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>Install Python (if you don't have it)</h3>
+    <p>Open a terminal (Command Prompt or PowerShell) and type <code>python --version</code>. If it shows a version number, you're good. If not:</p>
+    <div class="substep">Go to <strong>python.org/downloads</strong> → Download Python 3.x → Run installer</div>
+    <div class="substep"><strong>IMPORTANT:</strong> Tick ✅ "Add Python to PATH" during install</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>Install dependencies</h3>
+    <p>Open Command Prompt and run:</p>
+    <p><code>pip install requests winotify</code></p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>Download the script</h3>
+    <p>Save <a href="eli-watcher.py" style="color:#7dd3fc">eli-watcher.py</a> to a permanent folder on your PC. Something like:</p>
+    <div class="substep"><strong>Work:</strong> <code>C:\Users\YourName\Scripts\eli-watcher.py</code></div>
+    <div class="substep"><strong>Home:</strong> <code>C:\Users\YourName\Scripts\eli-watcher.py</code></div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <h3>Edit the config</h3>
+    <p>Open <code>eli-watcher.py</code> in any text editor. At the top, change these values:</p>
+    <div class="substep"><strong>Work PC:</strong> Set <code>MODE = "work"</code> and paste your work PAT into <code>WORK_PAT</code></div>
+    <div class="substep"><strong>Home PC:</strong> Set <code>MODE = "private"</code> and paste your personal PAT into <code>PRIVATE_PAT</code>. Also set <code>PRIVATE_REPO</code> to your personal GitHub username + <code>/eli-private</code></div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <h3>Test it</h3>
+    <p>Open Command Prompt, navigate to the script folder, and run:</p>
+    <p><code>python eli-watcher.py</code></p>
+    <p>If you have open Issues, you should see a Windows notification pop up. If there are no Issues, nothing happens (that's correct).</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <h3>Add to Windows Task Scheduler</h3>
+    <p>This makes it run automatically on login and every 30 minutes.</p>
+    <div class="substep">Press <strong>Win + R</strong> → type <code>taskschd.msc</code> → Enter</div>
+    <div class="substep">Click <strong>Create Basic Task</strong> (right panel)</div>
+    <div class="substep"><strong>Name:</strong> <code>ELI Watcher</code></div>
+    <div class="substep"><strong>Trigger:</strong> "When I log on"</div>
+    <div class="substep"><strong>Action:</strong> "Start a program"</div>
+    <div class="substep"><strong>Program:</strong> <code>python</code></div>
+    <div class="substep"><strong>Arguments:</strong> <code>C:\Users\YourName\Scripts\eli-watcher.py</code> (use the actual path)</div>
+    <div class="substep">Finish the wizard, then <strong>right-click the task → Properties</strong></div>
+    <div class="substep">Go to <strong>Triggers</strong> tab → Edit → tick <strong>"Repeat task every 30 minutes"</strong> for a duration of <strong>"Indefinitely"</strong></div>
+    <div class="substep">Go to <strong>Settings</strong> tab → tick <strong>"Run task as soon as possible after a scheduled start is missed"</strong></div>
+    <div class="substep">Click OK. Done.</div>
+  </div>
+
+  <div class="callout green">
+    <strong>✅ The watcher is live.</strong> Every 30 minutes, if there are new requests in your queue, a Windows notification will pop up with sound. Click it to see the full queue.
+  </div>
+</div>
+</section>
+
+<!-- ═══ SLIDE 9 — HOW IT ALL FITS TOGETHER ═══ -->
+<section class="slide accent" id="s9">
+<div class="slide-inner">
+  <div class="slide-num">09 / 09</div>
+  <p class="label-sm">The Full Picture</p>
+  <h2>How Everything Connects</h2>
+
+  <div class="step">
+    <div class="step-num">📱</div>
+    <h3>You share a reel or type a thought</h3>
+    <p>iOS Shortcut → "Work or Private?" → creates a GitHub Issue on the right repo</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">🔔</div>
+    <h3>Your PC notifies you</h3>
+    <p>The Python watcher detects the new Issue and fires a Windows toast notification within 30 minutes</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">⚙️</div>
+    <h3>Work guides auto-build (work PC only)</h3>
+    <p>Cowork's scheduled tasks run at <strong>8:30am</strong> and <strong>2pm</strong> on weekdays. They check the queue, build guides, push to GitHub Pages, and close the Issues. The 2pm run means guides are ready before you leave at 3.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">🔒</div>
+    <h3>Private guides — manual for now</h3>
+    <p>At home, open Claude Pro and say "check my private ELI queue." Claude reads the Issues from eli-private, builds the guide, and saves it locally. Nothing touches work.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">🚗</div>
+    <h3>Coming soon: audio for the drive home</h3>
+    <p>The 2pm run will eventually generate an optional audio summary of new guides so you can listen in the car.</p>
+  </div>
+
+  <div class="callout info">
+    <strong>💡 Duplicate detection:</strong> The auto-processor checks existing guides before building. If a request overlaps with something already built, it skips it and leaves a comment on the Issue for you to review manually.
   </div>
 </div>
 </section>
