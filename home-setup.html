@@ -188,18 +188,22 @@
 </div>
 </section>
 
-<!-- ═══ SLIDE 3 — WORK PAT FOR ISSUES ═══ -->
+<!-- ═══ SLIDE 3 — WORK PAT (DO AT WORK) ═══ -->
 <section class="slide" id="s3">
 <div class="slide-inner">
   <div class="slide-num">03 / 07</div>
-  <p class="label-sm">Part 2</p>
+  <p class="label-sm">⏭️ Do This At Work Tomorrow</p>
   <h2>Generate a Work PAT for Issues</h2>
-  <p>Your existing work PAT (<code>eli-pages</code>) has Contents permission for pushing files. For the iOS Shortcut, you need a PAT that can <strong>create Issues</strong> on the work repo too.</p>
+  <p>This step happens <strong>at work, on your work PC</strong>. Do NOT log into your work GitHub from home. Your existing work PAT (<code>eli-pages</code>) has Contents permission for pushing files. For the Shortcut, you need a separate PAT that can <strong>create Issues</strong>.</p>
+
+  <div class="callout warn">
+    <strong>⚠️ SKIP THIS TONIGHT.</strong> Do this tomorrow at work. The Shortcut will work for Private requests without this. You'll add the Work route tomorrow.
+  </div>
 
   <div class="step">
     <div class="step-num">1</div>
-    <h3>Log into your work GitHub</h3>
-    <p>Go to <code>github.com/settings/personal-access-tokens/new</code> on your <strong>work</strong> GitHub account (grantgrantgrantgrantgrant).</p>
+    <h3>At work: open your work GitHub</h3>
+    <p>On your <strong>work PC</strong>, go to <code>github.com/settings/personal-access-tokens/new</code> (you'll already be logged into grantgrantgrantgrantgrant).</p>
   </div>
 
   <div class="step">
@@ -209,13 +213,20 @@
     <div class="substep"><strong>Expiration:</strong> 90 days</div>
     <div class="substep"><strong>Repository access:</strong> Only select repositories → <code>eli</code></div>
     <div class="substep"><strong>Permissions:</strong> Click "+ Add permissions" → search <strong>Issues</strong> → set to <strong>Read and write</strong></div>
-    <p>Click <strong>Generate token</strong>. Copy and save it.</p>
+    <p>Click <strong>Generate token</strong>. Copy it and send it to your phone (e.g. AirDrop, or paste into a private note you can access from your phone).</p>
   </div>
 
-  <div class="callout warn">
-    <strong>⚠️ You now have two PATs — keep them straight:</strong><br>
-    • <code>eli-shortcut</code> → work GitHub → creates Issues on <strong>eli</strong> (public)<br>
-    • <code>eli-private-shortcut</code> → personal GitHub → creates Issues on <strong>eli-private</strong> (private)
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>On your phone: update the Shortcut</h3>
+    <p>Open the ELI Shortcut → edit the "Work" branch → paste the work PAT into the Authorization header. Now both routes work.</p>
+  </div>
+
+  <div class="callout info">
+    <strong>💡 Two PATs, two accounts, completely separate:</strong><br>
+    • <code>eli-shortcut</code> → work GitHub (generated at work) → Issues on <strong>eli</strong> (public)<br>
+    • <code>eli-private-shortcut</code> → personal GitHub (generated at home) → Issues on <strong>eli-private</strong> (private)<br><br>
+    Your work GitHub is never logged into from home. Your personal GitHub is never logged into at work.
   </div>
 </div>
 </section>
@@ -374,8 +385,8 @@
 <div class="slide-inner">
   <div class="slide-num">07 / 07</div>
   <p class="label-sm">Summary</p>
-  <h2>Tonight's Checklist</h2>
-  <p>Do these in order. The whole thing should take about 15 minutes.</p>
+  <h2>Tonight at Home</h2>
+  <p>Do these in order. About 15 minutes total. No work accounts needed.</p>
 
   <div class="step">
     <div class="step-num">☐</div>
@@ -397,33 +408,43 @@
 
   <div class="step">
     <div class="step-num">☐</div>
-    <h3>4. Generate work PAT for Issues</h3>
-    <p>Log into grantgrantgrantgrantgrant on GitHub → same process → scope to eli → Issues: Read and write → save the token</p>
-    <div class="callout info" style="margin-top:10px">
-      <strong>💡 You can do this step tomorrow at work instead.</strong> The Shortcut will work for private requests tonight without the work PAT. Just leave the Work branch empty for now and add the work API call tomorrow.
-    </div>
+    <h3>4. Build the iOS Shortcut (Private branch only)</h3>
+    <p>Follow slide 4. Only build the <strong>Private</strong> branch tonight — for the Work branch, just add a "Show Notification" action that says "Add work PAT at work tomorrow" as a placeholder.</p>
   </div>
 
   <div class="step">
     <div class="step-num">☐</div>
-    <h3>5. Build the iOS Shortcut</h3>
-    <p>Follow the step-by-step in slide 4. Paste in your PATs where indicated.</p>
-  </div>
-
-  <div class="step">
-    <div class="step-num">☐</div>
-    <h3>6. Add to home screen</h3>
+    <h3>5. Add to home screen</h3>
     <p>Long-press the Shortcut → Details → Add to Home Screen</p>
   </div>
 
   <div class="step">
     <div class="step-num">☐</div>
-    <h3>7. Test it</h3>
+    <h3>6. Test it</h3>
     <p>Open Instagram → share any reel → tap ELI → pick Private → type "test" → check that an Issue appeared on your eli-private repo</p>
   </div>
 
   <div class="callout green">
-    <strong>✅ Once this is done, you're set.</strong> Every reel, every random thought — one tap from your phone, queued and waiting for you.
+    <strong>✅ Private pipeline is live.</strong> You can start queuing private requests tonight.
+  </div>
+
+  <h2 style="margin-top:40px">Tomorrow at Work</h2>
+  <p>Two quick steps to enable the Work route. Do this on your work PC.</p>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>7. Generate work PAT on your work PC</h3>
+    <p>On your work GitHub (grantgrantgrantgrantgrant) → Settings → Developer Settings → Fine-grained tokens → new → scope to eli → Issues: Read and write → Generate → send the token to your phone (AirDrop or private note)</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">☐</div>
+    <h3>8. Update the Shortcut on your phone</h3>
+    <p>Open the ELI Shortcut → edit the Work branch → replace the placeholder with the real API call using the work PAT. Done — both routes now work.</p>
+  </div>
+
+  <div class="callout green">
+    <strong>✅ Both pipelines live.</strong> Every reel, every random thought — one tap from your phone, routed to the right place.
   </div>
 </div>
 </section>
